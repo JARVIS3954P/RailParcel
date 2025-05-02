@@ -10,7 +10,9 @@ import HomePage from "./pages/Index";
 import TrackPage from "./pages/Track";
 import SendParcelPage from "./pages/SendParcel";
 import MyParcelsPage from "./pages/MyParcels";
+import AuthPage from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./components/AuthProvider";
 
 const queryClient = new QueryClient();
 
@@ -20,19 +22,22 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="flex flex-col min-h-screen">
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/track" element={<TrackPage />} />
-              <Route path="/send" element={<SendParcelPage />} />
-              <Route path="/my-parcels" element={<MyParcelsPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+        <AuthProvider>
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/track" element={<TrackPage />} />
+                <Route path="/send" element={<SendParcelPage />} />
+                <Route path="/my-parcels" element={<MyParcelsPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

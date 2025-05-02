@@ -2,19 +2,40 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Link } from 'react-router-dom';
-import { MenuIcon, Package, Home, Search, User, LogIn } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MenuIcon, Package, Home, Search, User, LogIn, LogOut, UserPlus } from 'lucide-react';
+import { useAuth } from './AuthProvider';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const isLoggedIn = false; // This will be replaced with authentication state
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const closeSheet = () => setIsOpen(false);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out successfully",
+      });
+      navigate('/');
+      closeSheet();
+    } catch (error: any) {
+      toast({
+        title: "Error logging out",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const navLinks = [
     { name: "Home", path: "/", icon: Home },
     { name: "Track Parcel", path: "/track", icon: Search },
-    { name: "My Parcels", path: "/my-parcels", icon: Package },
+    { name: "My Parcels", path: "/my-parcels", icon: Package, requiresAuth: true },
     { name: "Profile", path: "/profile", icon: User, requiresAuth: true },
   ];
 
@@ -32,7 +53,7 @@ export default function Navbar() {
           {/* Desktop navigation */}
           <div className="hidden md:flex md:items-center md:space-x-4">
             {navLinks.map((link) => 
-              (!link.requiresAuth || (link.requiresAuth && isLoggedIn)) && (
+              (!link.requiresAuth || (link.requiresAuth && user)) && (
                 <Link 
                   key={link.name}
                   to={link.path} 
@@ -43,13 +64,26 @@ export default function Navbar() {
               )
             )}
             
-            {isLoggedIn ? (
-              <Button variant="outline" className="ml-4">Logout</Button>
-            ) : (
-              <Button className="ml-4 bg-railway-blue hover:bg-railway-darkBlue text-white">
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
+            {user ? (
+              <Button variant="outline" className="ml-4" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
               </Button>
+            ) : (
+              <div className="ml-4 space-x-2 flex">
+                <Button asChild variant="ghost" className="text-railway-blue">
+                  <Link to="/auth">
+                    <LogIn className="mr-1 h-4 w-4" />
+                    Login
+                  </Link>
+                </Button>
+                <Button asChild className="bg-railway-blue hover:bg-railway-darkBlue text-white">
+                  <Link to="/auth?tab=register">
+                    <UserPlus className="mr-1 h-4 w-4" />
+                    Sign Up
+                  </Link>
+                </Button>
+              </div>
             )}
           </div>
           
@@ -69,7 +103,7 @@ export default function Navbar() {
                   </div>
                   <nav className="flex flex-col space-y-4">
                     {navLinks.map((link) => 
-                      (!link.requiresAuth || (link.requiresAuth && isLoggedIn)) && (
+                      (!link.requiresAuth || (link.requiresAuth && user)) && (
                         <Link
                           key={link.name}
                           to={link.path}
@@ -83,13 +117,26 @@ export default function Navbar() {
                     )}
                   </nav>
                   <div className="mt-auto mb-8">
-                    {isLoggedIn ? (
-                      <Button variant="outline" className="w-full" onClick={closeSheet}>Logout</Button>
-                    ) : (
-                      <Button className="w-full bg-railway-blue hover:bg-railway-darkBlue" onClick={closeSheet}>
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Login
+                    {user ? (
+                      <Button variant="outline" className="w-full" onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
                       </Button>
+                    ) : (
+                      <div className="space-y-2">
+                        <Button asChild className="w-full bg-railway-blue hover:bg-railway-darkBlue" onClick={closeSheet}>
+                          <Link to="/auth">
+                            <LogIn className="mr-2 h-4 w-4" />
+                            Login
+                          </Link>
+                        </Button>
+                        <Button asChild variant="outline" className="w-full" onClick={closeSheet}>
+                          <Link to="/auth?tab=register">
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Sign Up
+                          </Link>
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
